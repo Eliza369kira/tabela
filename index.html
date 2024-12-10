@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Produtos por Cliente</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <style>
@@ -36,7 +37,7 @@
             margin-top: 5px;
             border: 1px solid #4CAF50; /* Cor verde para bordas */
             padding: 5px;
-            width: 22%;  /* Largura das tabelas ajustada */
+            width: 30%;  /* Largura das tabelas ajustada */
             display: inline-block;
             margin-right: 10px;
             vertical-align: top;
@@ -102,7 +103,7 @@
         /* Ajustes para o botão de impressão */
         .btn-info {
             background-color: #2196F3;
-            border-color: #2196F3;
+            border-color: #72b6ee;
         }
 
         /* Botão "Adicionar Produto" centralizado */
@@ -125,10 +126,11 @@
         <h2>Cadastro de Produtos por Cliente</h2>
 
         <div class="button-container">
-            <button class="btn btn-warning" onclick="mostrarTabelas()">Mostrar Tabelas</button>
-            <button class="btn btn-danger" onclick="selecionarTabela()">Excluir Tabela</button>
-            <button class="btn btn-danger" onclick="selecionarCelula()">Excluir Célula</button>
+            <button class="btn btn-warning" onclick="selecionarTabela()">Selecionar Tabela</button>
+            <button class="btn btn-warning" onclick="selecionarCelula()">Selecionar Célula</button>
             <button class="btn btn-info" onclick="imprimirTabelas()">Imprimir Tabelas</button>
+            <button class="btn btn-danger" id="excluir-tabela-btn">Excluir Tabela</button>
+            <button class="btn btn-danger" id="excluir-celula-btn">Excluir Célula</button>
         </div>
 
         <!-- Formulário com campos ajustados -->
@@ -165,136 +167,171 @@
                     <option value="Tomate">
                     <option value="Vagem">
                 </datalist><br><br>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-adicionar">Adicionar Produto</button>
-        </form>
+                <div class="button-container">
+                    <button type="button" class="btn btn-primary btn-adicionar" onclick="adicionarCliente(event)">Adicionar</button>
+                </div>
+                
 
         <div id="clientes-container" class="tabelas-container mt-4"></div> <!-- Contêiner flexível -->
     </div>
 
     <script>
-        function adicionarCliente(event) {
-            event.preventDefault();
 
-            const nomeCliente = document.getElementById('clienteNome').value.trim();
-            const quantidade = parseInt(document.getElementById('quantidade').value);
-            const produto = document.getElementById('produto').value;
+function adicionarCliente(event) {
+        event.preventDefault();  // Previne o recarregamento da página
 
-            // Se a quantidade for inválida ou vazia, podemos tratá-la como 0 ou vazia
-            const quantidadeFinal = isNaN(quantidade) || quantidade < 0 ? '' : quantidade;
+        const nomeCliente = document.getElementById('clienteNome').value.trim(); // Obtém o nome do cliente
+        const quantidade = parseInt(document.getElementById('quantidade').value); // Obtém a quantidade
+        const produto = document.getElementById('produto').value; // Obtém o produto
 
-            let clienteTabela = document.getElementById(nomeCliente);
+        // Se a quantidade for inválida ou vazia, podemos tratá-la como 0 ou vazia
+        const quantidadeFinal = isNaN(quantidade) || quantidade < 0 ? '' : quantidade;
 
-            // Se a tabela do cliente não existir, cria uma nova tabela
-            if (!clienteTabela) {
-                clienteTabela = document.createElement('div');
-                clienteTabela.classList.add('tabela-cliente');
-                clienteTabela.id = nomeCliente;
+        
+        // Verifica se a tabela do cliente já existe
+        let clienteTabela = document.getElementById(nomeCliente);
 
-                const tituloCliente = document.createElement('h3');
-                tituloCliente.textContent = nomeCliente || 'Cliente Anônimo';
-                clienteTabela.appendChild(tituloCliente);
+        // Se a tabela do cliente não existir, cria uma nova tabela
+        if (!clienteTabela) {
+            clienteTabela = document.createElement('div');
+            clienteTabela.classList.add('tabela-cliente');
+            clienteTabela.id = nomeCliente;  // A tabela será identificada pelo nome do cliente
 
-                const tabela = document.createElement('table');
-                const thead = document.createElement('thead');
-                const tr = document.createElement('tr');
-                const thQuantidade = document.createElement('th');
-                thQuantidade.textContent = 'Quant.';
-                const thProduto = document.createElement('th');
-                thProduto.textContent = 'Produto';
-                tr.appendChild(thQuantidade);
-                tr.appendChild(thProduto);
-                thead.appendChild(tr);
-                tabela.appendChild(thead);
-                tabela.appendChild(document.createElement('tbody'));
+            const tituloCliente = document.createElement('h3');
+            tituloCliente.textContent = nomeCliente || '.';
+            clienteTabela.appendChild(tituloCliente);
 
-                clienteTabela.appendChild(tabela);
+            const tabela = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tr = document.createElement('tr');
+            const thQuantidade = document.createElement('th');
+            thQuantidade.textContent = 'Quant.';
+            const thProduto = document.createElement('th');
+            thProduto.textContent = 'Produto';
+            tr.appendChild(thQuantidade);
+            tr.appendChild(thProduto);
+            thead.appendChild(tr);
+            tabela.appendChild(thead);
+            tabela.appendChild(document.createElement('tbody'));
 
-                // Criando 18 linhas com produtos já preenchidos
-                const tabelaClientes = clienteTabela.querySelector('tbody');
-                const produtos = ["Abacate", "Abobrinha", "Alface", "Berinjela", "Chuchu", "Gengibre", "Graviola", "Jiló", "Maracujá", "Maxixe", "Pepino", "Pimentão", "Repolho roxo", "Repolho verde", "Tangerina", "Tomate", "Vagem"];
+            clienteTabela.appendChild(tabela);
 
-                for (let i = 0; i < 18; i++) {
-                    const novaLinha = tabelaClientes.insertRow();
-                    const celulaQuantidade = novaLinha.insertCell(0);
-                    const celulaProduto = novaLinha.insertCell(1);
-
-                    // Preenchendo a célula de produto com os itens
-                    celulaProduto.textContent = produtos[i] || '';  // Adiciona o produto ou deixa vazio
-                    celulaQuantidade.textContent = '';  // Deixa a célula de quantidade vazia
-                }
-
-                document.getElementById('clientes-container').appendChild(clienteTabela);
-            }
-
-            // Verificar se o produto já existe na tabela do cliente
+            // Criando 18 linhas com produtos já preenchidos
             const tabelaClientes = clienteTabela.querySelector('tbody');
-            const linhas = tabelaClientes.querySelectorAll('tr');
+            const produtos = ["Abacate", "Abobrinha", "Alface", "Berinjela", "Chuchu", "Gengibre", "Graviola", "Jiló", "Maracujá", "Maxixe", "Pepino", "Pimentão", "Repolho roxo", "Repolho verde", "Tangerina", "Tomate", "Vagem"];
 
-            let produtoExistente = false;
-
-            linhas.forEach(linha => {
-                const celulaProduto = linha.cells[1];
-                const celulaQuantidade = linha.cells[0];
-                if (celulaProduto.textContent === produto) {
-                    // Substituir a quantidade se o produto já existir
-                    celulaQuantidade.textContent = quantidadeFinal || '';  // Deixando em branco, sem tracinho
-                    produtoExistente = true;
-                }
-            });
-
-            // Se o produto não existia, adiciona uma nova linha
-            if (!produtoExistente && produto) {  // Adiciona somente se o produto for informado
+            for (let i = 0; i < 18; i++) {
                 const novaLinha = tabelaClientes.insertRow();
                 const celulaQuantidade = novaLinha.insertCell(0);
                 const celulaProduto = novaLinha.insertCell(1);
 
-                celulaQuantidade.textContent = quantidadeFinal || '';  // Deixando em branco, sem tracinho
-                celulaProduto.textContent = produto || '';  // Deixando em branco, sem valor padrão
+                // Preenchendo a célula de produto com os itens
+                celulaProduto.textContent = produtos[i] || '.';  // Adiciona o produto ou deixa vazio
+                celulaQuantidade.textContent = '';  // Deixa a célula de quantidade vazia
             }
 
-            document.getElementById('form-cliente').reset();
+            // Adiciona a tabela ao contêiner de clientes
+            document.getElementById('clientes-container').appendChild(clienteTabela);
         }
+
+        // Verificar se o produto já existe na tabela do cliente
+        const tabelaClientes = clienteTabela.querySelector('tbody');
+        const linhas = tabelaClientes.querySelectorAll('tr');
+
+        let produtoExistente = false;
+
+        linhas.forEach(linha => {
+            const celulaProduto = linha.cells[1];
+            const celulaQuantidade = linha.cells[0];
+            if (celulaProduto.textContent === produto) {
+                // Substituir a quantidade se o produto já existir
+                celulaQuantidade.textContent = quantidadeFinal || '';  // Deixando em branco, sem tracinho
+                produtoExistente = true;
+            }
+        });
+
+        // Se o produto não existia, adiciona uma nova linha
+        if (!produtoExistente && produto) {  // Adiciona somente se o produto for informado
+            const novaLinha = tabelaClientes.insertRow();
+            const celulaQuantidade = novaLinha.insertCell(0);
+            const celulaProduto = novaLinha.insertCell(1);
+
+            celulaQuantidade.textContent = quantidadeFinal || '';  // Deixando em branco, sem tracinho
+            celulaProduto.textContent = produto || '';  // Deixando em branco, sem valor padrão
+        }
+
+        // Limpa o formulário após adicionar o cliente
+        document.getElementById('form-cliente').reset();
+    }
+
+
+        let tabelaSelecionada = null;
+        let celulaSelecionada = null;
+
+        // Função para selecionar tabela
+        function selecionarTabela() {
+            const tabelas = document.querySelectorAll('.tabela-cliente');
+            tabelas.forEach(tabela => {
+                tabela.addEventListener('click', () => {
+                    if (tabelaSelecionada) tabelaSelecionada.style.border = '1px solid #4CAF50';
+                    tabela.style.border = '2px solid red'; // Destaque na tabela selecionada
+                    tabelaSelecionada = tabela;
+                });
+            });
+        }
+
+        // Função para excluir tabela selecionada
+        document.getElementById('excluir-tabela-btn').addEventListener('click', function() {
+            if (tabelaSelecionada) {
+                tabelaSelecionada.remove();
+                tabelaSelecionada = null;
+            } else {
+                alert('Selecione uma tabela para excluir.');
+            }
+        });
+
+        // Função para selecionar célula
+        function selecionarCelula() {
+            const celulas = document.querySelectorAll('.tabela-cliente td');
+            celulas.forEach(celula => {
+                celula.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Evita que o clique selecione a tabela ao invés da célula
+                    if (celulaSelecionada) celulaSelecionada.style.background = '';
+                    celula.style.background = 'lightcoral'; // Destaque na célula selecionada
+                    celulaSelecionada = celula;
+                });
+            });
+        }
+
+        // Função para excluir célula selecionada
+        document.getElementById('excluir-celula-btn').addEventListener('click', function() {
+            if (celulaSelecionada) {
+                celulaSelecionada.textContent = ''; // Limpa o conteúdo da célula
+                celulaSelecionada.style.background = ''; // Remove o destaque
+                celulaSelecionada = null;
+            } else {
+                alert('Selecione uma célula para excluir.');
+            }
+        });
 
         // Função para imprimir as tabelas
         function imprimirTabelas() {
             const content = document.getElementById('clientes-container').innerHTML; // Pega o conteúdo da área a ser impressa
-
             const printWindow = window.open('', '', 'height=500, width=800');
             printWindow.document.write('<html><head><title>Imprimir Tabelas</title>');
             printWindow.document.write('<style>');  
-            printWindow.document.write('body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }');
-            
-            // Definindo as propriedades para imprimir 8 tabelas por página
-            printWindow.document.write('.tabela-cliente {');
-            printWindow.document.write('    margin-top: 10px;');
-            printWindow.document.write('    border: 1px solid #4CAF50;');
-            printWindow.document.write('    padding: 5px;');
-            printWindow.document.write('    width: 22%;');  // Largura das tabelas ajustada para caber 8 por página
-            printWindow.document.write('    display: inline-block;');
-            printWindow.document.write('    margin-right: 5px;');
-            printWindow.document.write('    vertical-align: top;');
-            printWindow.document.write('    background-color: rgba(255, 255, 255, 0.9);');
-            printWindow.document.write('    border-radius: 8px;');
-            printWindow.document.write('    page-break-inside: avoid;');  // Evita quebra dentro da tabela
-            printWindow.document.write('}');
-
+            printWindow.document.write('body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0;text-align: center; }');
+            printWindow.document.write('.tabela-cliente { margin-top: 10px; border: 1px solid #4CAF50; padding: 5px; width: 22%; display: inline-block; margin-right: 5px; vertical-align: top; background-color: rgba(255, 255, 255, 0.9); border-radius: 8px; page-break-inside: avoid;text-align: center; }');
             printWindow.document.write('.tabela-cliente h3 { font-size: 0.9rem; color: #4CAF50; text-align: center; }');
-            
-            printWindow.document.write('.tabela-cliente table { width: 100%; font-size: 0.7rem; border-collapse: collapse; }');  // Menor fonte
+            printWindow.document.write('.tabela-cliente table { width: 100%; font-size: 0.7rem; border-collapse: collapse; }');
             printWindow.document.write('.tabela-cliente th, .tabela-cliente td { padding: 4px; border: 1px solid #4CAF50; text-align: center; color: #4CAF50; }');
             printWindow.document.write('.tabela-cliente th { background-color: #e8f5e9; }');
-
             printWindow.document.write('@page { size: A4; margin: 5mm; }');  // Margens ajustadas
             printWindow.document.write('</style></head><body>');
-            printWindow.document.write(content); // Adiciona o conteúdo da tabela clonada
-            
-
+            printWindow.document.write(content); 
             printWindow.document.close();
-
             printWindow.onload = function () {
-                printWindow.print();  // Imprime o conteúdo
+                printWindow.print();  
             };
         }
     </script>
